@@ -1,7 +1,7 @@
 package com.tiagoramirez.template.health.ports.in.web;
 
-import com.tiagoramirez.template.health.dtos.response.BaseResponse;
+import com.tiagoramirez.template.health.domain.HealthStatus;
 
 public interface HealthPort {
-    BaseResponse check();
+    HealthStatus check();
 }
