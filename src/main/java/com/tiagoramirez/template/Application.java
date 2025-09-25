@@ -1,4 +1,4 @@
-package com.tiagoramirez.example.demo;
+package com.tiagoramirez.template;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    image: tiagoramirez/demo:latest
+    image: tiagoramirez/template:latest
     restart: always
     build:
       context: .

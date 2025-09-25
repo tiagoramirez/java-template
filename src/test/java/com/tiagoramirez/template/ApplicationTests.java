@@ -1,4 +1,4 @@
-package com.tiagoramirez.example.demo;
+package com.tiagoramirez.template;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
