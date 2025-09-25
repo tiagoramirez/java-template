@@ -33,4 +33,4 @@ USER appuser
 ENTRYPOINT ["java","-jar","/app/app.jar"]
 
 HEALTHCHECK --start-period=5s --interval=30s --timeout=3s \
-  CMD wget -qO- http://localhost:8080/actuator/health || exit 1
+  CMD wget -qO- http://localhost:8080/api/health || exit 1
