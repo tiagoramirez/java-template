@@ -1,5 +1,6 @@
 plugins {
 	id 'java'
+    id 'jacoco'
 	id 'org.springframework.boot' version '3.5.6'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -40,4 +41,32 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+test {
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                "com/tiagoramirez/*/Application*",
+                "com/tiagoramirez/**/constants/**",
+                "com/tiagoramirez/**/dtos/**",
+                "com/tiagoramirez/**/exceptions/**"
+            ])
+        }))
+    }
+
+    reports {
+        xml.required = true
+        xml.destination file("${buildDir}/reports/jacoco/report.xml")
+    }
 }
