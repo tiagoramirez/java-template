@@ -115,6 +115,9 @@ To view the test coverage report, open the `index.html` file located inside the 
 4. Gradle build fails
    - Solution: Run `./gradlew clean build --refresh-dependencies`
 
+5. Connection to Prometheus from Grafana not working (connection refused)
+   - Solution: Use `http://host.docker.internal:9090` instead of `http://localhost:9090`
+
 ## Contributing
 
 1. Fork the repository
