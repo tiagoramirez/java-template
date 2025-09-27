@@ -27,6 +27,8 @@
 - Github Actions
 - RESTful API
 - Swagger documentation
+- Prometheus metrics
+- Grafana dashboard
 
 ## Prerequisites
 
@@ -69,7 +71,10 @@ docker compose up -d --build
 ```sh
 curl --location --request GET 'http://localhost:8080/api/health'
 ```
-4. You can also use the Swagger UI at `http://localhost:8080/api/swagger-ui/index.html`
+Optional:
+1. Use the Swagger UI at `http://localhost:8080/api/swagger-ui/index.html`
+2. Use the Prometheus UI at `http://localhost:9090`
+3. Use the Grafana UI at `http://localhost:3000` (setup required with prometheus metrics)
 
 ### Prod
 
@@ -82,7 +87,10 @@ Follow these steps to get the project up with `prod` profile:
 ```sh
 curl --location --request GET '{base_url}/api/health'
 ```
-5. You can also use the Swagger UI at `{base_url}/api/swagger-ui/index.html`
+Optional:
+1. Use the Swagger UI at `{base_url}/api/swagger-ui/index.html`
+2. Use the Prometheus UI at `{base_url}:9090`
+3. Use the Grafana UI at `{base_url}:3000` (setup required with prometheus metrics)
 
 ## Running Tests
 
