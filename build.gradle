@@ -1,7 +1,7 @@
 plugins {
 	id 'java'
     id 'jacoco'
-	id 'org.springframework.boot' version '3.5.6'
+	id 'org.springframework.boot' version '3.5.7'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -11,7 +11,7 @@ description = 'Template project for Spring Boot'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(25)
 	}
 }
 
@@ -44,7 +44,7 @@ tasks.named('test') {
 }
 
 jacoco {
-    toolVersion = "0.8.12"
+    toolVersion = "0.8.14"
 }
 
 test {
@@ -67,6 +67,5 @@ jacocoTestReport {
 
     reports {
         xml.required = true
-        xml.destination file("${buildDir}/reports/jacoco/report.xml")
     }
 }
