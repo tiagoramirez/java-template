@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tiagoramirez.template.health.domain.HealthStatus;
 import com.tiagoramirez.template.health.ports.in.HealthPort;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +16,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @RequestMapping("/health")
 public class HealthController {
 
-    @Autowired
-    private HealthPort healthPort;
+    private final HealthPort healthPort;
+
+    public HealthController(HealthPort healthPort) {
+        this.healthPort = healthPort;
+    }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
