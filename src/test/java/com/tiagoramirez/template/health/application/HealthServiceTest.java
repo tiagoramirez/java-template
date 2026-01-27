@@ -1,7 +1,6 @@
-package com.tiagoramirez.template.health.adapters.in;
+package com.tiagoramirez.template.health.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -16,21 +15,22 @@ import com.tiagoramirez.template.health.domain.HealthStatus;
 import com.tiagoramirez.template.health.ports.out.TimeProviderPort;
 
 @ExtendWith(MockitoExtension.class)
-public class HealthAdapterTest {
+public class HealthServiceTest {
 
     @InjectMocks
-    private HealthAdapter adapter;
+    private HealthService service;
 
     @Mock
     private TimeProviderPort timeProvider;
 
     @Test
     void testCheck() {
-        when(timeProvider.getCurrentTime()).thenReturn(Instant.now());
+        Instant now = Instant.now();
+        when(timeProvider.getCurrentTime()).thenReturn(now);
 
-        HealthStatus status = adapter.check();
+        HealthStatus status = service.check();
 
         assertEquals("I'm alive!", status.message());
-        assertNotNull(status.timestamp());
+        assertEquals(now.minusSeconds(3*60*60), status.timestamp());
     }
 }
