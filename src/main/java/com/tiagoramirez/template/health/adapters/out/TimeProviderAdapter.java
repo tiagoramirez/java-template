@@ -11,8 +11,6 @@ public class TimeProviderAdapter implements TimeProviderPort {
 
     @Override
     public Instant getCurrentTime() {
-        // This has no sense because the time is in Z (UTC)... It is just for example
-        long secondsToArgentina = -3 * 60 * 60;
-        return Instant.now().plusSeconds(secondsToArgentina);
+        return Instant.now();
     }
 }
