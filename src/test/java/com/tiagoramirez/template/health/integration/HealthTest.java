@@ -1,44 +1,42 @@
 package com.tiagoramirez.template.health.integration;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tiagoramirez.template.health.dtos.response.HealthResponse;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 class HealthTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @LocalServerPort
+    private int port;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @BeforeEach
+    void setUp() {
+        RestAssured.baseURI = "http://localhost";
+        RestAssured.port = port;
+        RestAssured.basePath = "/api"; // si tu API tiene un prefijo
+    }
 
     @Test
-    void healthCheck_ShouldReturnOkStatusAndHealthMessage() throws Exception {
-        MvcResult result = mockMvc.perform(get("/health")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andReturn();
-
-        String responseContent = result.getResponse().getContentAsString();
-        HealthResponse response = objectMapper.readValue(responseContent, HealthResponse.class);
-
-        assertThat(response).isNotNull();
-        assertThat(response.message()).isEqualTo("I'm alive!");
-        assertThat(response.timestamp()).isNotNull();
+    void healthCheck_ShouldReturnOkStatusAndHealthMessage() {
+        given()
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/health")
+                .then()
+                .statusCode(200)
+                .body("message", equalTo("I'm alive!"))
+                .and()
+                .body("timestamp", notNullValue());
     }
 }
