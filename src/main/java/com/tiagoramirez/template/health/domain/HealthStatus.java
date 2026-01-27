@@ -2,8 +2,11 @@ package com.tiagoramirez.template.health.domain;
 
 import java.time.Instant;
 
+import com.tiagoramirez.template.health.ports.out.TimeApiPort;
+
 public record HealthStatus(String message, Instant timestamp) {
-    public static HealthStatus ok() {
-        return new HealthStatus("I'm alive!", Instant.now());
+    public static HealthStatus ok(TimeApiPort timeApiPort) {
+        Instant now = timeApiPort.getCurrentTime();
+        return new HealthStatus("I'm alive!", now);
     }
 }
