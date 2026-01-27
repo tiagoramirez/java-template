@@ -1,29 +1,36 @@
 package com.tiagoramirez.template.health.application;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tiagoramirez.template.health.domain.HealthStatus;
+import com.tiagoramirez.template.health.ports.out.TimeProviderPort;
 
 @ExtendWith(MockitoExtension.class)
-class HealthServiceTest {
+public class HealthServiceTest {
 
     @InjectMocks
-    private HealthService healthService;
+    private HealthService service;
+
+    @Mock
+    private TimeProviderPort timeProvider;
 
     @Test
-    void shouldReturnHealthStatus() {
-        HealthStatus result = healthService.check();
+    void testCheck() {
+        Instant now = Instant.now();
+        when(timeProvider.getCurrentTime()).thenReturn(now);
 
-        assertNotNull(result);
-        assertEquals("I'm alive!", result.message());
-        assertNotNull(result.timestamp());
-        assertTrue(result.timestamp().isBefore(Instant.now().plusSeconds(1)));
+        HealthStatus status = service.check();
+
+        assertEquals("I'm alive!", status.message());
+        assertEquals(now, status.timestamp());
     }
 }
