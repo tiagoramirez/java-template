@@ -3,8 +3,7 @@ package com.tiagoramirez.template.health.adapters.in.web;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tiagoramirez.template.health.domain.HealthStatus;
-import com.tiagoramirez.template.health.dtos.response.HealthResponse;
-import com.tiagoramirez.template.health.ports.in.web.HealthPort;
+import com.tiagoramirez.template.health.ports.in.HealthPort;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,9 +22,9 @@ public class HealthController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<HealthResponse> check() {
+    public ResponseEntity<HealthResponseDto> check() {
         HealthStatus healthStatus = healthPort.check();
-        return ResponseEntity.ok(new HealthResponse(healthStatus.message(), healthStatus.timestamp()));
+        return ResponseEntity.ok(new HealthResponseDto(healthStatus.message(), healthStatus.timestamp()));
     }
 
 }
