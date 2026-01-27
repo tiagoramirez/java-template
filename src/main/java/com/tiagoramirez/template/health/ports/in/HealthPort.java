@@ -1,4 +1,4 @@
-package com.tiagoramirez.template.health.ports.in.web;
+package com.tiagoramirez.template.health.ports.in;
 
 import com.tiagoramirez.template.health.domain.HealthStatus;
 
