@@ -24,7 +24,7 @@ class HealthTest {
     void setUp() {
         RestAssured.baseURI = "http://localhost";
         RestAssured.port = port;
-        RestAssured.basePath = "/api"; // si tu API tiene un prefijo
+        RestAssured.basePath = "/api";
     }
 
     @Test
