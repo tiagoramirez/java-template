@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tiagoramirez.template.health.domain.HealthStatus;
-import com.tiagoramirez.template.health.ports.out.TimeApiPort;
+import com.tiagoramirez.template.health.ports.out.TimeProviderPort;
 
 @ExtendWith(MockitoExtension.class)
 public class HealthAdapterTest {
@@ -22,11 +22,11 @@ public class HealthAdapterTest {
     private HealthAdapter adapter;
 
     @Mock
-    private TimeApiPort port;
+    private TimeProviderPort timeProvider;
 
     @Test
     void testCheck() {
-        when(port.getCurrentTime()).thenReturn(Instant.now());
+        when(timeProvider.getCurrentTime()).thenReturn(Instant.now());
 
         HealthStatus status = adapter.check();
 

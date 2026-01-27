@@ -13,21 +13,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.tiagoramirez.template.health.ports.out.TimeApiPort;
+import com.tiagoramirez.template.health.ports.out.TimeProviderPort;
 
 @ExtendWith(MockitoExtension.class)
 class HealthStatusTest {
-    private TimeApiPort timeApiPort;
+    private TimeProviderPort timeProvider;
 
     @BeforeEach
     void setUp() {
-        timeApiPort = mock(TimeApiPort.class);
+        timeProvider = mock(TimeProviderPort.class);
     }
 
     @Test
     void shouldCreateHealthStatusWithCurrentTimestamp() {
-        when(timeApiPort.getCurrentTime()).thenReturn(Instant.now());
-        HealthStatus status = HealthStatus.ok(timeApiPort);
+        when(timeProvider.getCurrentTime()).thenReturn(Instant.now());
+        HealthStatus status = HealthStatus.ok(timeProvider);
 
         assertEquals("I'm alive!", status.message());
         assertNotNull(status.timestamp());
