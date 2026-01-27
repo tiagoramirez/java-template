@@ -2,11 +2,10 @@ package com.tiagoramirez.template.health.domain;
 
 import java.time.Instant;
 
-import com.tiagoramirez.template.health.ports.out.TimeProviderPort;
-
 public record HealthStatus(String message, Instant timestamp) {
-    public static HealthStatus ok(TimeProviderPort timeApiPort) {
-        Instant now = timeApiPort.getCurrentTime();
-        return new HealthStatus("I'm alive!", now);
+    public static HealthStatus ok(Instant timestamp) {
+        // This has no sense because the time is in Z (UTC)... It is just for example
+        long secondsToArgentina = -3 * 60 * 60;
+        return new HealthStatus("I'm alive!", timestamp.plusSeconds(secondsToArgentina));
     }
 }
