@@ -26,7 +26,12 @@ public class HealthController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<HealthResponseDto> check() {
         HealthStatus healthStatus = healthPort.check();
-        return ResponseEntity.ok(new HealthResponseDto(healthStatus.message(), healthStatus.timestamp()));
+
+        // This has no sense because the time is in Z (UTC)... It is just for example
+        long secondsToArgentina = 3 * 60 * 60;
+
+        return ResponseEntity.ok(new HealthResponseDto(healthStatus.message(),
+                healthStatus.timestamp().minusSeconds(secondsToArgentina)));
     }
 
 }

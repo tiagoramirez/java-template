@@ -31,6 +31,6 @@ public class HealthServiceTest {
         HealthStatus status = service.check();
 
         assertEquals("I'm alive!", status.message());
-        assertEquals(now.minusSeconds(3*60*60), status.timestamp());
+        assertEquals(now, status.timestamp());
     }
 }

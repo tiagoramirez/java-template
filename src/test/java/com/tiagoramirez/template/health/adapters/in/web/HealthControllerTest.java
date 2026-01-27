@@ -1,7 +1,6 @@
 package com.tiagoramirez.template.health.adapters.in.web;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -27,11 +26,13 @@ public class HealthControllerTest {
 
     @Test
     void testHealthCheck() {
-        when(port.check()).thenReturn(new HealthStatus("I'm alive!", Instant.now()));
+        long secondsToArgentina = 3 * 60 * 60;
+        Instant now = Instant.now();
+        when(port.check()).thenReturn(new HealthStatus("I'm alive!", now));
 
         ResponseEntity<HealthResponseDto> response = controller.check();
 
         assertEquals("I'm alive!", response.getBody().message());
-        assertNotNull(response.getBody().timestamp());
+        assertEquals(now.minusSeconds(secondsToArgentina), response.getBody().timestamp());
     }
 }
