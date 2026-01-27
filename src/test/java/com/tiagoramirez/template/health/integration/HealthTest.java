@@ -37,6 +37,6 @@ class HealthTest {
                 .statusCode(200)
                 .body("message", equalTo("I'm alive!"))
                 .and()
-                .body("timestamp", notNullValue());
+                .body("argentina_time", notNullValue());
     }
 }

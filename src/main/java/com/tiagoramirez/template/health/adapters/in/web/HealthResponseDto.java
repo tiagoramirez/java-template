@@ -6,5 +6,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record HealthResponseDto(
         String message,
-        @JsonProperty("timestamp") Instant timestamp) {
+        @JsonProperty("argentina_time") Instant timestamp) {
 }
