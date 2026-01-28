@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   app:
-    image: tiagoramirez/template:latest
+    image: tiagoramirez/java-app:latest
     restart: always
     build:
       context: .
@@ -12,23 +10,54 @@ services:
     environment:
       - APP_NAME=${APP_NAME}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    networks:
+      - monitoring
 
   prometheus:
     image: prom/prometheus:latest
     restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    ports:
-      - "9090:9090"
+      - prometheus-data:/prometheus
     depends_on:
-      - app
+      app:
+        condition: service_healthy
+    networks:
+      - monitoring
 
   grafana:
     image: grafana/grafana:latest
     restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
     ports:
       - "3000:3000"
-    volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
       - prometheus
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
