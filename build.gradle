@@ -7,7 +7,7 @@ plugins {
 
 group = 'com.tiagoramirez.template'
 version = '0.0.1'
-description = 'Template project for Spring Boot'
+description = 'Spring Boot Java Application'
 
 java {
 	toolchain {
