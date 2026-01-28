@@ -1,5 +1,5 @@
 # ---------- Build stage ----------
-FROM gradle:8.5-jdk21 AS build
+FROM gradle:9.2.0-jdk25-alpine AS build
 
 WORKDIR /home/gradle/project
 
@@ -15,7 +15,7 @@ RUN gradle build -x test --no-daemon && \
     rm -rf ~/.gradle /home/gradle/.gradle /home/gradle/project/.gradle
 
 # ---------- Runtime stage ----------
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine-3.22 AS runtime
 
 # Create no‑root user
 RUN addgroup -S app && adduser -S -G app appuser

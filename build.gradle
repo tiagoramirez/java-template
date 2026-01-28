@@ -1,7 +1,7 @@
 plugins {
 	id 'java'
     id 'jacoco'
-	id 'org.springframework.boot' version '3.5.6'
+	id 'org.springframework.boot' version '4.0.2'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -11,7 +11,7 @@ description = 'Template project for Spring Boot'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(25)
 	}
 }
 
@@ -33,11 +33,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.rest-assured:rest-assured:6.0.0'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -46,7 +48,7 @@ tasks.named('test') {
 }
 
 jacoco {
-    toolVersion = "0.8.12"
+    toolVersion = "0.8.14"
 }
 
 test {
@@ -61,7 +63,7 @@ jacocoTestReport {
             fileTree(dir: it, exclude: [
                 "com/tiagoramirez/*/Application*",
                 "com/tiagoramirez/**/constants/**",
-                "com/tiagoramirez/**/dtos/**",
+                "com/tiagoramirez/**/**/Dto.java",
                 "com/tiagoramirez/**/exceptions/**"
             ])
         }))
@@ -69,6 +71,5 @@ jacocoTestReport {
 
     reports {
         xml.required = true
-        xml.destination file("${buildDir}/reports/jacoco/report.xml")
     }
 }

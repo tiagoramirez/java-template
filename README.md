@@ -37,7 +37,7 @@
 - IDE with Java support (e.g., IntelliJ IDEA, Eclipse, VS Code)
 
 ### Java
-- Java Development Kit (JDK) version 21
+- Java Development Kit (JDK) version 25
 
 ### Infrastructure
 - Docker
@@ -110,7 +110,7 @@ To view the test coverage report, open the `index.html` file located inside the 
    - Solution: Check Docker logs using `docker logs <container_name>`
 
 3. JDK version mismatch
-   - Solution: Ensure `JAVA_HOME` points to JDK 21
+   - Solution: Ensure `JAVA_HOME` points to JDK 25
 
 4. Gradle build fails
    - Solution: Run `./gradlew clean build --refresh-dependencies`
