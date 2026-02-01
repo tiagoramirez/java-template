@@ -27,6 +27,9 @@
 - Github Actions
 - RESTful API
 - Swagger documentation
+- Prometheus metrics with auto-provisioning
+- Grafana dashboards with automated datasource configuration
+- Persistent metric storage across restarts
 
 ## Prerequisites
 
@@ -69,7 +72,10 @@ docker compose up -d --build
 ```sh
 curl --location --request GET 'http://localhost:8080/api/health'
 ```
-4. You can also use the Swagger UI at `http://localhost:8080/api/swagger-ui/index.html`
+Optional:
+1. Use the Swagger UI at `http://localhost:8080/api/swagger-ui/index.html`
+2. Use the Grafana UI at `http://localhost:3000` (auto-configured with dashboards)
+   - See [Monitoring Guide](docs/MONITORING.md) for detailed usage
 
 ### Prod
 
@@ -82,7 +88,9 @@ Follow these steps to get the project up with `prod` profile:
 ```sh
 curl --location --request GET '{base_url}/api/health'
 ```
-5. You can also use the Swagger UI at `{base_url}/api/swagger-ui/index.html`
+Optional:
+1. Use the Swagger UI at `{base_url}/api/swagger-ui/index.html`
+2. Use the Grafana UI at `{base_url}:3000` (auto-configured with dashboards)
 
 ## Running Tests
 
@@ -106,6 +114,9 @@ To view the test coverage report, open the `index.html` file located inside the 
 
 4. Gradle build fails
    - Solution: Run `./gradlew clean build --refresh-dependencies`
+
+5. Grafana datasource issues
+   - Solution: Datasource auto-provisions on startup. If issues persist, see [Verification Guide](docs/VERIFICATION.md)
 
 ## Contributing
 
