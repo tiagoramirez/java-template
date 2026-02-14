@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="java-app"/>
+    <springProperty scope="context" name="appEnvironment" source="spring.profiles.active" defaultValue="dev"/>
+
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"application":"${appName}","environment":"${appEnvironment}"}</customFields>
+            <includeContext>true</includeContext>
+            <includeMdc>true</includeMdc>
+            <includeMdcKeyName>trace_id</includeMdcKeyName>
+            <includeMdcKeyName>http_method</includeMdcKeyName>
+            <includeMdcKeyName>http_path</includeMdcKeyName>
+            <includeMdcKeyName>http_status</includeMdcKeyName>
+            <includeMdcKeyName>http_duration_ms</includeMdcKeyName>
+            <includeMdcKeyName>client_ip</includeMdcKeyName>
+            <includeMdcKeyName>user_agent</includeMdcKeyName>
+            <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                <maxLength>2048</maxLength>
+                <shortenedClassNameLength>36</shortenedClassNameLength>
+            </throwableConverter>
+        </encoder>
+    </appender>
+
+    <appender name="CONSOLE_TEXT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <springProfile name="dev,test">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_TEXT"/>
+        </root>
+        <logger name="com.tiagoramirez.template" level="DEBUG"/>
+        <logger name="org.springframework.web" level="INFO"/>
+    </springProfile>
+
+    <springProfile name="pre-prod,prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_JSON"/>
+        </root>
+        <logger name="com.tiagoramirez.template" level="DEBUG"/>
+        <logger name="org.springframework.web" level="INFO"/>
+    </springProfile>
+</configuration>

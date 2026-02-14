@@ -154,8 +154,91 @@ The docker-compose stack includes:
 - **app**: Spring Boot application (port 8080)
 - **prometheus**: Metrics scraping (internal, scrapes every 10s)
 - **grafana**: Dashboards (port 3000, auto-configured with datasource and dashboards)
+- **loki**: Log aggregation and storage (port 3100)
+- **promtail**: Log shipper (scrapes Docker container logs)
 
 Monitoring details in `docs/MONITORING.md` and `docs/VERIFICATION.md`.
+
+## Logging
+
+### Structured JSON Logging
+
+The application uses profile-based logging configuration:
+- **`dev`, `test` profiles**: Human-readable text format for console debugging
+- **`pre-prod`, `prod` profiles**: Structured JSON format for log aggregation (Loki)
+
+Configuration: `src/main/resources/logback-spring.xml`
+
+### Adding Logging to Code
+
+Use SLF4J for logging:
+
+```java
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Component
+public class MyService {
+    private static final Logger logger = LoggerFactory.getLogger(MyService.class);
+
+    public void doSomething() {
+        logger.info("Processing request");
+        logger.warn("Potential issue detected");
+        logger.error("Error occurred", exception);
+    }
+}
+```
+
+### Using MDC for Correlation IDs
+
+MDC (Mapped Diagnostic Context) allows adding contextual information to logs:
+
+```java
+import org.slf4j.MDC;
+
+public void processRequest(String requestId) {
+    try {
+        MDC.put("request_id", requestId);
+        logger.info("Processing request");  // Will include request_id in JSON
+    } finally {
+        MDC.clear();  // Always clear MDC
+    }
+}
+```
+
+### HTTP Request Logging
+
+All HTTP requests are automatically logged by `HttpLoggingFilter` with:
+- Trace ID (unique per request)
+- HTTP method, path, status
+- Duration, client IP, user agent
+- Logged at appropriate level (INFO for 2xx, WARN for 4xx, ERROR for 5xx)
+
+### Viewing Logs
+
+**Locally (Docker)**:
+```bash
+# Follow application logs
+docker compose logs -f app
+
+# View recent logs
+docker logs java-app --tail 100
+```
+
+**In Grafana**:
+1. Navigate to http://localhost:3000
+2. Go to **Explore** (compass icon)
+3. Select **Loki** datasource
+4. Query: `{container="java-app"}`
+5. Or use **Application Logs** dashboard
+
+**Useful queries**:
+- All logs: `{container="java-app"}`
+- Errors only: `{container="java-app"} | json | level="ERROR"`
+- Specific endpoint: `{container="java-app"} | json | http_path="/api/health"`
+- Slow requests: `{container="java-app"} | json | http_duration_ms > 500`
+
+See `docs/MONITORING.md` for more LogQL examples.
 
 ## CI/CD
 

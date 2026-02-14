@@ -42,8 +42,10 @@ A production-ready Spring Boot template implementing hexagonal architecture (por
 ### Monitoring & Observability
 - **Prometheus** metrics with custom tags
 - **Grafana** dashboards with auto-provisioning
+- **Loki** log aggregation with structured JSON logging
+- **Promtail** log shipping from Docker containers
 - **Spring Boot Actuator** health checks
-- Persistent metric storage (30-day retention)
+- Persistent metric and log storage (30-day/7-day retention)
 - Pre-configured monitoring stack
 
 ### DevOps
@@ -157,6 +159,7 @@ curl http://localhost:8080/api/health
 - **Application**: http://localhost:8080/api/health
 - **Swagger UI**: http://localhost:8080/api/swagger-ui/index.html
 - **Grafana**: http://localhost:3000 (admin/admin)
+- **Loki**: http://localhost:3100 (internal API, use Grafana for queries)
 - **Prometheus**: Internal only (not exposed)
 
 See [docs/MONITORING.md](docs/MONITORING.md) for detailed monitoring guide.
@@ -260,6 +263,29 @@ Grafana (port 3000)
 - **HTTP Metrics**: Request count, duration, response times (p50, p95, p99)
 - **System Metrics**: CPU usage, process uptime
 - **Custom Tags**: Application name and environment on all metrics
+
+### Log Aggregation
+
+The monitoring stack includes **Grafana Loki** for centralized log aggregation:
+
+- **Structured JSON logs** in pre-prod/prod (text format in dev/test)
+- **Automatic HTTP request logging** with trace IDs, status codes, durations
+- **LogQL query language** for powerful log search and filtering
+- **Log-metric correlation** in Grafana dashboards
+- **7-day retention** with automatic cleanup
+
+**View logs in Grafana**:
+1. Open http://localhost:3000
+2. Go to **Explore** → Select **Loki** datasource
+3. Query: `{container="java-app"}`
+
+**Example queries**:
+- All logs: `{container="java-app"}`
+- Errors only: `{container="java-app"} | json | level="ERROR"`
+- Specific endpoint: `{container="java-app"} | json | http_path="/api/health"`
+- Slow requests (>500ms): `{container="java-app"} | json | http_duration_ms > 500`
+
+**Pre-configured dashboard**: **Application Logs** (includes log volume, status codes, errors, response times)
 
 ### Access Monitoring
 
