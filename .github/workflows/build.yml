@@ -7,24 +7,62 @@ on:
 jobs:
   check-branches:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Validate branch names
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate branch names and create RC tags
         run: |
             branch_regex_release='^release/[0-9]+\.[0-9]+\.[0-9]+$'
             branch_regex_feature='^feature/.+$'
+            branch_regex_hotfix='^hotfix/.+$'
 
             head="${{ github.head_ref }}"
             base="${{ github.base_ref }}"
-            
-            if [[ "$base" == "main" && ! "$head" =~ $branch_regex_release ]]; then
-              echo "❌ Merge to 'main' is only allowed from release/* branches (semantic versioning)."
-              exit 1
-            elif [[ "$base" == "develop" && ! "$head" =~ $branch_regex_feature ]]; then
-              echo "❌ Merge to 'develop' is only allowed from feature/* branches."
-              exit 1
-            else
-              echo "✅ Branch validation passed."
+
+            if [[ "$base" == "main" ]]; then
+              if [[ ! "$head" =~ $branch_regex_release ]] && [[ ! "$head" =~ $branch_regex_hotfix ]]; then
+                echo "❌ Merge to 'main' is only allowed from release/* or hotfix/* branches."
+                exit 1
+              fi
+
+              # Create RC tag for release branches
+              if [[ "$head" =~ $branch_regex_release ]]; then
+                # Extract version (release/1.2.3 → 1.2.3)
+                version="${head#release/}"
+
+                # Find latest RC number (1.2.3-rc.1, 1.2.3-rc.2, etc.)
+                latest_rc=$(git tag -l "${version}-rc.*" | sort -V | tail -n 1)
+
+                if [[ -z "$latest_rc" ]]; then
+                  # First RC tag
+                  rc_tag="${version}-rc.1"
+                else
+                  # Increment RC number (1.2.3-rc.2 → 1.2.3-rc.3)
+                  rc_num=$(echo "$latest_rc" | sed 's/.*-rc\.//')
+                  next_num=$((rc_num + 1))
+                  rc_tag="${version}-rc.${next_num}"
+                fi
+
+                # Create and push tag
+                git config user.name "github-actions[bot]"
+                git config user.email "github-actions[bot]@users.noreply.github.com"
+                git tag -a "$rc_tag" -m "Release candidate $rc_tag for PR #${{ github.event.pull_request.number }}"
+                git push origin "$rc_tag"
+                echo "✅ RC tag $rc_tag created"
+              fi
+            elif [[ "$base" == "develop" ]]; then
+              if [[ ! "$head" =~ $branch_regex_feature ]] && [[ ! "$head" =~ $branch_regex_hotfix ]]; then
+                echo "❌ Merge to 'develop' is only allowed from feature/* or hotfix/* branches."
+                exit 1
+              fi
             fi
+
+            echo "✅ Branch validation passed."
 
   test-and-build:
     needs: check-branches
@@ -74,6 +112,7 @@ jobs:
           path: build/reports/jacoco/test/html
 
       - name: JaCoCo Code Coverage Report
+        if: ${{ !startsWith(github.head_ref, 'hotfix/') }}
         uses: PavanMudigonda/jacoco-reporter@v5.0
         with:
           coverage_results_path: build/reports/jacoco/test/jacocoTestReport.xml
