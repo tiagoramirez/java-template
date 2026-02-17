@@ -189,6 +189,12 @@ GitHub Actions workflow (`.github/workflows/ci-cd.yml`) enforces:
 
 Release Candidate (RC) tags must be protected to preserve an immutable audit trail. RC tags (`x.y.z-rc.N`) are automatically created during release branch PR validation and must be protected from deletion/modification. Repository administrators should configure tag protection rulesets targeting the `*-rc.*` pattern.
 
+### Tag Protection
+
+> **Setup Guide**: See [docs/guides/GITHUB_TAG_PROTECTION_SETUP.md](docs/guides/GITHUB_TAG_PROTECTION_SETUP.md) for detailed configuration.
+
+Release Candidate (RC) tags must be protected to preserve an immutable audit trail. RC tags (`x.y.z-rc.N`) are automatically created during release branch PR validation and must be protected from deletion/modification. Repository administrators should configure tag protection rulesets targeting the `*-rc.*` pattern.
+
 ## JaCoCo Coverage Exclusions
 
 The following patterns are excluded from coverage reports:

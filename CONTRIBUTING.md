@@ -28,6 +28,15 @@ If you're setting up this project for the first time or configuring CI/CD:
 
 ---
 
+## Setup Guides for Repository Administrators
+
+If you're setting up this project for the first time or configuring CI/CD:
+
+- **[GitHub Actions Setup](docs/guides/GITHUB_ACTIONS_SETUP.md)** - Complete workflow configuration
+- **[GitHub Tag Protection Setup](docs/guides/GITHUB_TAG_PROTECTION_SETUP.md)** - RC tag protection rules
+
+---
+
 ## How to Contribute
 
 ### Issues
