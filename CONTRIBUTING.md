@@ -84,7 +84,7 @@ git checkout -b release/v1.0.0        # Don't use 'v' prefix
 
 ### Enforcement
 
-CI validates branch names in `.github/workflows/pre-merge-validation.yml`:
+CI validates branch names in `.github/workflows/ci-cd.yml`:
 - PRs to `develop` must come from `feature/*` or `hotfix/*` branches
 - PRs to `main` must come from `release/X.Y.Z` or `hotfix/*` branches
 
@@ -98,6 +98,12 @@ When you create a PR from a `release/*` branch to `main`:
 - **Tag format**: `x.y.z-rc.N` where N is an incrementing number
 - **Purpose**: Immutable snapshots for QA testing and deployment verification
 - **Protection**: RC tags are protected from deletion/modification (admin-only bypass)
+
+#### Release Tag Creation
+When you merge a `release/*` branch to `main`:
+- **Automatic final tag**: A version tag (e.g., `1.2.3`) is created pointing to the merge commit
+- **Tag message**: Includes the PR number for traceability
+- **Purpose**: Marks the exact commit that was released to production
 
 #### Hotfix Backport Automation
 When you merge a `hotfix/*` branch to `main`:
@@ -267,7 +273,7 @@ open build/reports/jacoco/test/html/index.html
 ### Coverage Requirements
 
 - **Target**: 100% (enforced by CI for `feature/*` and `release/*` branches)
-- **Location**: `.github/workflows/pre-merge-validation.yml`
+- **Location**: `.github/workflows/ci-cd.yml`
 - CI will fail if coverage < 100% (hotfix branches exempt for emergency fixes)
 - Ensure new code is fully covered before submitting PR
 

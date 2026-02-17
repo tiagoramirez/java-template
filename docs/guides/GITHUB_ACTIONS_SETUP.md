@@ -4,17 +4,17 @@ This guide provides complete setup instructions for configuring the CI/CD workfl
 
 ## Overview
 
-This repository uses two GitHub Actions workflows:
+This repository uses a single GitHub Actions workflow:
 
-1. **Pre-Merge Validation** (`.github/workflows/pre-merge-validation.yml`)
-   - Validates branch names
-   - Runs tests with 100% coverage enforcement
-   - Creates Release Candidate tags for release branches
-   - Submits dependency graph for security scanning
+**CI/CD Pipeline** (`.github/workflows/ci-cd.yml`)
+- Validates branch names on PR open/update
+- Runs tests with 100% coverage enforcement
+- Creates Release Candidate tags for release branches on PR open/update
+- Submits dependency graph for security scanning
+- Creates final version tag when a release branch merges to `main`
+- Automatically creates backport PRs when hotfixes merge to `main`
 
-2. **Post-Merge Automation** (`.github/workflows/post-merge-automation.yml`)
-   - Automatically creates backport PRs when hotfixes are merged to `main`
-   - Ensures production fixes propagate to `develop` branch
+All jobs are event-driven: an `info` job always runs as a gate, pre-merge jobs execute on `opened/synchronize/reopened`, and post-merge jobs execute on `closed` (merged only).
 
 ## Prerequisites
 
@@ -176,9 +176,31 @@ jacocoTestReport {
 
 Triggers on: **Pull request closed (merged) to `main`**
 
-**Conditions**:
-- ✅ PR was merged (not just closed)
-- ✅ Source branch is `hotfix/*`
+Two independent jobs run based on the source branch type:
+
+---
+
+#### Job: create-release-tag
+
+**Condition**: Source branch is `release/*`
+
+**Actions**:
+1. Extracts version from branch name (e.g., `release/1.2.3` → `1.2.3`)
+2. Creates annotated tag `1.2.3` pointing to the merge commit on `main`
+3. Tag message includes PR number for traceability
+
+**Tag lifecycle for a release**:
+```
+release/1.2.3 PR opened    → 1.2.3-rc.1  (pre-merge, by ci-cd.yml)
+release/1.2.3 PR updated   → 1.2.3-rc.2  (pre-merge, by ci-cd.yml)
+release/1.2.3 PR merged    → 1.2.3       (post-merge, by ci-cd.yml)
+```
+
+---
+
+#### Job: create-hotfix-pr
+
+**Condition**: Source branch is `hotfix/*`
 
 **Actions**:
 1. Checks if hotfix branch still exists (may be auto-deleted)
@@ -190,6 +212,26 @@ Triggers on: **Pull request closed (merged) to `main`**
 
 **Conflict handling**: If conflicts exist, GitHub UI shows them. Resolve before merging.
 
+---
+
+### Release Workflow Example
+
+```bash
+# 1. Create release branch
+git checkout -b release/1.2.3 develop
+git push -u origin release/1.2.3
+
+# 2. Open PR: release/1.2.3 → main
+# ✅ Pre-merge: tag 1.2.3-rc.1 created
+
+# 3. Push additional commits if needed
+git push
+# ✅ Pre-merge: tag 1.2.3-rc.2 created
+
+# 4. PR approved and merged to main
+# ✅ Post-merge: final tag 1.2.3 created on main
+```
+
 ### Hotfix Workflow Example
 
 ```bash
@@ -198,7 +240,6 @@ git checkout -b hotfix/fix-critical-bug main
 git push -u origin hotfix/fix-critical-bug
 
 # 2. Make fix and commit
-# ... make changes ...
 git commit -m "fix: resolve critical production bug"
 git push
 
@@ -206,17 +247,17 @@ git push
 # (via GitHub UI)
 
 # 4. PR approved and merged to main
-# ✅ Post-merge automation automatically creates PR: hotfix/fix-critical-bug → develop
+# ✅ Post-merge: backport PR created → hotfix/fix-critical-bug → develop
 
 # 5. Review and merge the automated PR to develop
 # (resolve conflicts if any)
 ```
 
-### Why Automated Backports?
+### Why Post-Merge Automation?
 
-- **Consistency**: Ensures production fixes reach development branch
-- **Speed**: No manual PR creation needed
-- **Traceability**: Links original PR in backport description
+- **Consistency**: Ensures production fixes reach development branch (hotfix)
+- **Traceability**: Final version tag marks exact commit released to production (release)
+- **Speed**: No manual tagging or PR creation needed
 - **Safety**: Shows conflicts in GitHub UI, doesn't auto-merge
 
 ## Part 5: Testing Your Setup
@@ -316,7 +357,7 @@ git checkout -b feature/test-coverage develop
 **Symptoms**: Hotfix merged to `main` but no automated PR
 
 **Solutions**:
-1. Check Actions tab → Post-Merge Automation workflow
+1. Check Actions tab → CI/CD Pipeline workflow
 2. Verify branch name starts with `hotfix/`
 3. Check if PR was merged (not just closed)
 4. Look for errors in workflow logs
@@ -353,7 +394,7 @@ git checkout -b feature/test-coverage develop
 To change from 100% to 90%:
 
 ```yaml
-# In .github/workflows/pre-merge-validation.yml
+# In .github/workflows/ci-cd.yml
 - name: JaCoCo Code Coverage Report
   if: ${{ !startsWith(github.head_ref, 'hotfix/') }}
   uses: PavanMudigonda/jacoco-reporter@v5.0
@@ -367,7 +408,7 @@ To change from 100% to 90%:
 To support `bugfix/*` branches:
 
 ```yaml
-# In .github/workflows/pre-merge-validation.yml
+# In .github/workflows/ci-cd.yml
 - name: Validate branch names and create RC tags
   run: |
     branch_regex_bugfix='^bugfix/.+$'  # Add pattern
@@ -404,7 +445,7 @@ Remove the conditional:
 ### View Workflow Runs
 
 1. Navigate to: `Actions` tab
-2. Select workflow: **Pre-Merge Validation** or **Post-Merge Automation**
+2. Select workflow: **CI/CD Pipeline**
 3. Review recent runs, success rates, duration
 
 ### Monitor RC Tags

@@ -183,8 +183,7 @@ Set up GitHub audit log monitoring to alert on bypass events:
 
 - [CONTRIBUTING.md](../CONTRIBUTING.md) - Branch naming and workflow
 - [CLAUDE.md](../CLAUDE.md) - Full CI/CD pipeline documentation
-- `.github/workflows/pre-merge-validation.yml` - RC tag creation logic
-- `.github/workflows/post-merge-automation.yml` - Hotfix backport automation
+- `.github/workflows/ci-cd.yml` - RC tag creation, release tagging, hotfix backport automation
 
 ## Questions?
 

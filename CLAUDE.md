@@ -160,15 +160,16 @@ Monitoring details in `docs/MONITORING.md` and `docs/VERIFICATION.md`.
 ## CI/CD
 
 > **Setup Guide**: See [docs/guides/GITHUB_ACTIONS_SETUP.md](docs/guides/GITHUB_ACTIONS_SETUP.md) for complete configuration instructions.
+> **Workflow file**: `.github/workflows/ci-cd.yml`
 
-GitHub Actions workflow (`.github/workflows/pre-merge-validation.yml`) enforces:
+GitHub Actions workflow (`.github/workflows/ci-cd.yml`) enforces:
 
 ### Branch Workflow
 - **`feature/*` branches** → merge to `develop`
   - Example: `feature/add-authentication`
 - **`hotfix/*` branches** → merge to `main` (auto-creates backport PR to `develop`)
   - Example: `hotfix/fix-npe`
-- **`release/x.y.z` branches** → merge to `main` (auto-creates versioned RC tag `x.y.z-rc.N`)
+- **`release/x.y.z` branches** → merge to `main` (auto-creates versioned RC tag `x.y.z-rc.N` on each PR update; auto-creates final version tag `x.y.z` on merge)
   - Example: `release/1.2.0`
 
 ### CI Pipeline
@@ -177,6 +178,7 @@ GitHub Actions workflow (`.github/workflows/pre-merge-validation.yml`) enforces:
 - **Test execution**: `./gradlew clean test --no-daemon`
 - **100% coverage requirement**: Build fails if coverage < 100% (hotfix branches exempt)
 - **RC tag creation**: Release branches automatically create versioned RC tags (`x.y.z-rc.N`) during PR validation
+- **Release tag creation**: Release branches merged to `main` automatically create final version tag (`x.y.z`)
 - **Hotfix automation**: Hotfix branches merged to `main` automatically create backport PRs to `develop`
 - **Artifacts**: Coverage report uploaded to GitHub Actions
 - **Dependency graph**: Submitted for security scanning
