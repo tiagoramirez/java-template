@@ -1,11 +1,22 @@
-name: Pre-Merge Validation
+name: CI/CD Pipeline
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, closed]
     branches: ["develop", "main"]
 
 jobs:
+  info:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "action=${{ github.event.action }}"
+          echo "merged=${{ github.event.pull_request.merged }}"
+          echo "branch=${{ github.head_ref }} → ${{ github.base_ref }}"
+
   check-branches:
+    if: github.event.action != 'closed'
+    needs: info
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -32,23 +43,17 @@ jobs:
 
               # Create RC tag for release branches
               if [[ "$head" =~ $branch_regex_release ]]; then
-                # Extract version (release/1.2.3 → 1.2.3)
                 version="${head#release/}"
-
-                # Find latest RC number (1.2.3-rc.1, 1.2.3-rc.2, etc.)
                 latest_rc=$(git tag -l "${version}-rc.*" | sort -V | tail -n 1)
 
                 if [[ -z "$latest_rc" ]]; then
-                  # First RC tag
                   rc_tag="${version}-rc.1"
                 else
-                  # Increment RC number (1.2.3-rc.2 → 1.2.3-rc.3)
                   rc_num=$(echo "$latest_rc" | sed 's/.*-rc\.//')
                   next_num=$((rc_num + 1))
                   rc_tag="${version}-rc.${next_num}"
                 fi
 
-                # Create and push tag
                 git config user.name "github-actions[bot]"
                 git config user.email "github-actions[bot]@users.noreply.github.com"
                 git tag -a "$rc_tag" -m "Release candidate $rc_tag for PR #${{ github.event.pull_request.number }}"
@@ -65,6 +70,7 @@ jobs:
             echo "✅ Branch validation passed."
 
   test-and-build:
+    if: github.event.action != 'closed'
     needs: check-branches
     runs-on: ubuntu-latest
     permissions:
@@ -74,7 +80,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Cache Gradle packages
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
@@ -85,20 +90,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # Setup JDK
       - name: Setup JDK 25
         uses: actions/setup-java@v4
         with:
           java-version: '25'
           distribution: 'temurin'
 
-      # Setup Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 9.2.0
 
-      # Ensure wrapper is executable
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
@@ -120,9 +122,10 @@ jobs:
           coverage_report_title: JaCoCo
           minimum_coverage: 100
           fail_below_threshold: true
-          publish_only_summary: true          
+          publish_only_summary: true
 
   dependency-submission:
+    if: github.event.action != 'closed'
     needs: test-and-build
     runs-on: ubuntu-latest
     permissions:
@@ -139,3 +142,75 @@ jobs:
 
     - name: Generate and submit dependency graph
       uses: gradle/actions/dependency-submission@v4
+
+  create-release-tag:
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/') && github.base_ref == 'main'
+    needs: info
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create release tag
+        run: |
+          release_branch="${{ github.event.pull_request.head.ref }}"
+          pr_number="${{ github.event.pull_request.number }}"
+          version="${release_branch#release/}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$version" -m "Release $version (PR #${pr_number})"
+          git push origin "$version"
+          echo "✅ Release tag $version created"
+
+  create-hotfix-pr:
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'hotfix/') && github.base_ref == 'main'
+    needs: info
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Create PR to develop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          hotfix_branch="${{ github.event.pull_request.head.ref }}"
+          pr_number="${{ github.event.pull_request.number }}"
+          pr_title="${{ github.event.pull_request.title }}"
+
+          # Verify branch exists (may be auto-deleted)
+          if ! git ls-remote --heads origin "$hotfix_branch" | grep -q "$hotfix_branch"; then
+            echo "⚠️ Branch $hotfix_branch no longer exists (likely auto-deleted)"
+            exit 0
+          fi
+
+          # Check for existing PR
+          existing_pr=$(gh pr list --head "$hotfix_branch" --base develop --state open --json number --jq '.[0].number')
+
+          if [[ -n "$existing_pr" ]]; then
+            echo "ℹ️ PR already exists: #$existing_pr"
+            exit 0
+          fi
+
+          pr_body="This PR was automatically created by the CI/CD pipeline to backport hotfix changes from #$pr_number to develop.\n\nOriginal PR title: $pr_title"
+
+          gh pr create \
+            --title "[$hotfix_branch] Backport to develop" \
+            --body "$pr_body" \
+            --base develop \
+            --head "$hotfix_branch" \
+            --label "automated,hotfix-backport" \
+            || echo "⚠️ PR creation failed (manual intervention required)"
