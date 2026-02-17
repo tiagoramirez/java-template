@@ -76,9 +76,9 @@ git checkout -b release/v1.0.0        # Don't use 'v' prefix
 
 ### Enforcement
 
-CI validates branch names in `.github/workflows/build.yml`:
+CI validates branch names in `.github/workflows/pre-merge-validation.yml`:
 - PRs to `develop` must come from `feature/*` or `hotfix/*` branches
-- PRs to `main` must come from `release/X.Y.Z` branches (semantic versioning required)
+- PRs to `main` must come from `release/X.Y.Z` or `hotfix/*` branches
 
 ---
 
@@ -235,9 +235,9 @@ open build/reports/jacoco/test/html/index.html
 
 ### Coverage Requirements
 
-- **Target**: 100% (enforced by CI)
-- **Location**: `.github/workflows/build.yml` line 82
-- CI will fail if coverage < 100%
+- **Target**: 100% (enforced by CI for `feature/*` and `release/*` branches)
+- **Location**: `.github/workflows/pre-merge-validation.yml`
+- CI will fail if coverage < 100% (hotfix branches exempt for emergency fixes)
 - Ensure new code is fully covered before submitting PR
 
 ---

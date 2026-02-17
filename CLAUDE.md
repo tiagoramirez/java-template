@@ -159,7 +159,7 @@ Monitoring details in `docs/MONITORING.md` and `docs/VERIFICATION.md`.
 
 ## CI/CD
 
-GitHub Actions workflow (`.github/workflows/build.yml`) enforces:
+GitHub Actions workflow (`.github/workflows/pre-merge-validation.yml`) enforces:
 
 ### Branch Workflow
 - **`feature/*` branches** → merge to `develop`
