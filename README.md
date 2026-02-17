@@ -280,9 +280,16 @@ For detailed monitoring documentation:
 
 ## Documentation
 
+### Project Overview
 - **[CLAUDE.md](CLAUDE.md)** - AI assistant instructions for working with this codebase
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Hexagonal architecture detailed guide
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines and development setup
+
+### Setup Guides
+- **[docs/guides/GITHUB_ACTIONS_SETUP.md](docs/guides/GITHUB_ACTIONS_SETUP.md)** - Complete CI/CD workflow configuration
+- **[docs/guides/GITHUB_TAG_PROTECTION_SETUP.md](docs/guides/GITHUB_TAG_PROTECTION_SETUP.md)** - RC tag protection setup
+
+### Monitoring
 - **[docs/MONITORING.md](docs/MONITORING.md)** - Monitoring and observability guide
 - **[docs/VERIFICATION.md](docs/VERIFICATION.md)** - Monitoring stack verification
 

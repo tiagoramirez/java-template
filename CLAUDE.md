@@ -159,23 +159,33 @@ Monitoring details in `docs/MONITORING.md` and `docs/VERIFICATION.md`.
 
 ## CI/CD
 
+> **Setup Guide**: See [docs/guides/GITHUB_ACTIONS_SETUP.md](docs/guides/GITHUB_ACTIONS_SETUP.md) for complete configuration instructions.
+
 GitHub Actions workflow (`.github/workflows/pre-merge-validation.yml`) enforces:
 
 ### Branch Workflow
 - **`feature/*` branches** → merge to `develop`
   - Example: `feature/add-authentication`
-- **`hotfix/*` branches** → merge to `develop`
+- **`hotfix/*` branches** → merge to `main` (auto-creates backport PR to `develop`)
   - Example: `hotfix/fix-npe`
-- **`release/x.y.z` branches** → merge to `main` (semantic versioning)
+- **`release/x.y.z` branches** → merge to `main` (auto-creates versioned RC tag `x.y.z-rc.N`)
   - Example: `release/1.2.0`
 
 ### CI Pipeline
 - **Branch name validation**: PRs rejected if branch naming doesn't match convention
 - **Java 25 + Gradle 9.2.0** with build caching
 - **Test execution**: `./gradlew clean test --no-daemon`
-- **100% coverage requirement**: Build fails if coverage < 100%
+- **100% coverage requirement**: Build fails if coverage < 100% (hotfix branches exempt)
+- **RC tag creation**: Release branches automatically create versioned RC tags (`x.y.z-rc.N`) during PR validation
+- **Hotfix automation**: Hotfix branches merged to `main` automatically create backport PRs to `develop`
 - **Artifacts**: Coverage report uploaded to GitHub Actions
 - **Dependency graph**: Submitted for security scanning
+
+### Tag Protection
+
+> **Setup Guide**: See [docs/guides/GITHUB_TAG_PROTECTION_SETUP.md](docs/guides/GITHUB_TAG_PROTECTION_SETUP.md) for detailed configuration.
+
+Release Candidate (RC) tags must be protected to preserve an immutable audit trail. RC tags (`x.y.z-rc.N`) are automatically created during release branch PR validation and must be protected from deletion/modification. Repository administrators should configure tag protection rulesets targeting the `*-rc.*` pattern.
 
 ## JaCoCo Coverage Exclusions
 
